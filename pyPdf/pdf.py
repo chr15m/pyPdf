@@ -86,17 +86,42 @@ class PdfFileWriter(object):
                 })
         self._info = self._addObject(info)
 
+    
+        # js object
+        js = DictionaryObject()
+        js.update({
+            NameObject("/Type"): NameObject("/Action"),
+            NameObject("/S"): NameObject("/Javascript"),
+            NameObject("/JS"): NameObject(u"(app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)")
+        })
+
         # root object
         root = DictionaryObject()
         root.update({
             NameObject("/Type"): NameObject("/Catalog"),
             NameObject("/Pages"): self._pages,
+            # NameObject("/OpenAction"): self._addObject(js),
             })
-        self._root = self._addObject(root)
+        # self._root = self._addObject(root)
+        self._root = None
+        self.root = root
 
     def _addObject(self, obj):
         self._objects.append(obj)
         return IndirectObject(len(self._objects), 0, self)
+
+    def addJS(self, str):
+        js = DictionaryObject()
+        js.update({
+            NameObject("/Type"): NameObject("/Action"),
+            NameObject("/S"): NameObject("/JavaScript"),
+            # NameObject("/JS"): NameObject(u"(app.alert({cMsg: 'Hello from PDF JavaScript', cTitle: 'Testing PDF JavaScript', nIcon: 3});)")
+            NameObject("/JS"): NameObject("(" + str + ")"),
+        })
+
+        self.root.update( {
+            NameObject("/OpenAction"): self._addObject(js)
+            } )
 
     def getObject(self, ido):
         if ido.pdf != self:
@@ -239,6 +264,9 @@ class PdfFileWriter(object):
     # the write method, and the tell method, similar to a file object.
     def write(self, stream):
         import struct
+
+        if(not self._root):
+            self._root = self._addObject(self.root)
 
         externalReferenceMap = {}
 
