@@ -27,7 +27,10 @@ Example:
         page5.mediaBox.getUpperRight_y() / 2
     )
     output.addPage(page5)
-
+    
+    # add some Javascript to launch the print window on opening this PDF
+    output.addJS("this.print({bUI:true,bSilent:false,bShrinkToFit:true});")
+    
     # print how many pages input1 has:
     print "document1.pdf has %s pages." % input1.getNumPages())
 
